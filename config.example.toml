@@ -1,0 +1,33 @@
+state_dir = "~/.local/state/automaintainer"
+worktree_dir = "~/Library/Caches/automaintainer/worktrees"
+database = "~/.local/state/automaintainer/state.sqlite3"
+qwen_command = "qwen"
+github_command = "gh"
+auto_merge = true
+max_changed_files = 12
+max_diff_lines = 700
+weekly_scan_day = "sunday"
+
+[jira]
+project_keys = ["PROJECT"]
+bug_types = ["Bug"]
+open_statuses = ["Open", "To Do", "Reopened"]
+# Optional JQL assignee filter; omit to inspect all open project bugs.
+
+[[projects]]
+key = "sample"
+path = "~/Development/your-project"
+github_repo = "owner/repository"
+base_branch = "main"
+issue_prefix = "PROJECT-"
+required_checks = ["ci"]
+
+# Include all test/source-of-truth artifacts used by this repository.
+protected_paths = [
+  "tests/**", "test/**", "*test*", "*spec*", "**/*test*", "**/*spec*",
+  "pytest.ini", "tox.ini", "mypy.ini", "pyproject.toml",
+  ".github/workflows/**", "Jenkinsfile", "Makefile"
+]
+test_commands = [["pytest", "-q"]]
+security_commands = [["osv-scanner", "scan", "source", "-r", "."], ["gitleaks", "detect", "--no-git", "--redact"]]
+allowed_paths = ["src/**", "app/**", "lib/**", "packages/**"]

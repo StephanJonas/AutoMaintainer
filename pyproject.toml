@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "automaintainer"
+version = "0.1.0"
+description = "Local Qwen-based Jira maintenance runner"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+automaintainer = "automaintainer.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["automaintainer*"]

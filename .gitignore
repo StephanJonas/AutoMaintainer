@@ -1,0 +1,8 @@
+config.toml
+.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+state/
+logs/
+worktrees/
