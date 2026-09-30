@@ -6,7 +6,7 @@ import os
 import sys
 from pathlib import Path
 
-from .config import load_config
+from .config import load_config, load_env_file
 from .runner import Runner
 
 
@@ -22,7 +22,9 @@ def main() -> None:
     sub.add_parser("escalations", help="show unresolved local escalations")
     args = parser.parse_args()
 
-    cfg = load_config(Path(args.config).expanduser())
+    config_path = Path(args.config).expanduser().resolve()
+    load_env_file(config_path.parent / ".env")
+    cfg = load_config(config_path)
     runner = Runner(cfg)
     try:
         if args.action == "escalations":

@@ -1,5 +1,10 @@
 config.toml
+.env
+.env.*
+!.env.example
 .venv/
+*.egg-info/
+*.swp
 __pycache__/
 *.py[cod]
 .DS_Store

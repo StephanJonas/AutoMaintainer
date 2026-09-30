@@ -3,31 +3,91 @@ worktree_dir = "~/Library/Caches/automaintainer/worktrees"
 database = "~/.local/state/automaintainer/state.sqlite3"
 qwen_command = "qwen"
 github_command = "gh"
+ollama_url = "http://127.0.0.1:11434"
+ollama_model = "qwen3.6:35b-a3b-coding"
 auto_merge = true
 max_changed_files = 12
 max_diff_lines = 700
 weekly_scan_day = "sunday"
 
 [jira]
-project_keys = ["PROJECT"]
-bug_types = ["Bug"]
 open_statuses = ["Open", "To Do", "Reopened"]
-# Optional JQL assignee filter; omit to inspect all open project bugs.
+escalation_assignee_account_id = "ATLAS_USER_ACCOUNT_ID"
+
+# Reusable, technology-specific prompts for the weekly local model review.
+[security_profiles.fastapi]
+prompt = """
+Review this FastAPI application for security defects in authentication and authorization,
+input validation, unsafe deserialization, CORS, secrets, and security-sensitive dependencies.
+Report only actionable issues supported by the supplied files. Do not change any files.
+"""
+
+[security_profiles.laravel]
+prompt = """
+Review this Laravel application for authorization and policy errors, CSRF, mass assignment,
+SQL injection, XSS, unsafe uploads, secrets, and security-sensitive dependencies.
+Report only actionable issues supported by the supplied files. Do not change any files.
+"""
+
+# One [[projects]] block per Jira project.
+[[projects]]
+key = "datalinker"
+jira_project_key = "DL"
+issue_prefix = "DL-"
+
+# One nested [[projects.repos]] block per Git repository.
+[[projects.repos]]
+key = "backend"
+path = "~/Development/DataLinker/backend"
+github_repo = "owner/datalinker-backend"
+base_branch = "main"
+required_checks = ["ci"]
+jira_components = ["Backend"]
+protected_paths = ["tests/**", "test/**", "*test*", "*spec*", "**/*test*", "**/*spec*", "pyproject.toml", ".github/workflows/**"]
+test_commands = [["pytest", "-q"]]
+security_commands = [["osv-scanner", "scan", "source", "-r", "."], ["gitleaks", "detect", "--no-git", "--redact"]]
+allowed_paths = ["src/**", "app/**", "lib/**", "packages/**"]
+# Opt in per repo after reviewing the dependency allowlist. The agent may change
+# only matching dependency manifests and lockfiles during security remediation.
+# security_auto_remediate = true
+# dependency_paths = ["pyproject.toml", "uv.lock", "requirements*.txt"]
+
+# Optional: multiple application targets can be reviewed inside one monorepo.
+# Each target references one reusable profile and a path relative to the repo root.
+# [[projects.repos.security_targets]]
+# key = "api"
+# path = "services/api"
+# profile = "fastapi"
+#
+# [[projects.repos.security_targets]]
+# key = "admin"
+# path = "apps/admin"
+# profile = "laravel"
+
+[[projects.repos]]
+key = "frontend"
+path = "~/Development/DataLinker/frontend"
+github_repo = "owner/datalinker-frontend"
+base_branch = "main"
+required_checks = ["ci"]
+jira_components = ["Frontend", "Web UI"]
+protected_paths = ["tests/**", "test/**", "*test*", "*spec*", "**/*test*", "**/*spec*", "package.json", ".github/workflows/**"]
+test_commands = [["npm", "test", "--", "--run"]]
+security_commands = [["npm", "audit", "--omit=dev"]]
+allowed_paths = ["src/**", "app/**", "lib/**", "packages/**"]
 
 [[projects]]
-key = "sample"
-path = "~/Development/your-project"
-github_repo = "owner/repository"
-base_branch = "main"
-issue_prefix = "PROJECT-"
-required_checks = ["ci"]
+key = "openums"
+jira_project_key = "OUM"
+issue_prefix = "OUM-"
 
-# Include all test/source-of-truth artifacts used by this repository.
-protected_paths = [
-  "tests/**", "test/**", "*test*", "*spec*", "**/*test*", "**/*spec*",
-  "pytest.ini", "tox.ini", "mypy.ini", "pyproject.toml",
-  ".github/workflows/**", "Jenkinsfile", "Makefile"
-]
+[[projects.repos]]
+key = "main"
+path = "~/Development/openUMS"
+github_repo = "owner/openums"
+base_branch = "main"
+required_checks = ["ci"]
+protected_paths = ["tests/**", "test/**", "*test*", "*spec*", "**/*test*", "**/*spec*", "pyproject.toml", ".github/workflows/**"]
 test_commands = [["pytest", "-q"]]
 security_commands = [["osv-scanner", "scan", "source", "-r", "."], ["gitleaks", "detect", "--no-git", "--redact"]]
 allowed_paths = ["src/**", "app/**", "lib/**", "packages/**"]

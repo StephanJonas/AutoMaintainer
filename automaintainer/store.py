@@ -31,6 +31,16 @@ class Store:
         row = self.db.execute("SELECT status FROM runs WHERE item=? ORDER BY id DESC LIMIT 1", (item,)).fetchone()
         return row[0] if row else None
 
+    def latest_detail(self, item: str) -> dict[str, Any]:
+        row = self.db.execute("SELECT detail FROM runs WHERE item=? ORDER BY id DESC LIMIT 1", (item,)).fetchone()
+        if not row:
+            return {}
+        try:
+            value = json.loads(row[0])
+        except (TypeError, json.JSONDecodeError):
+            return {}
+        return value if isinstance(value, dict) else {}
+
     def escalations(self) -> list[dict[str, Any]]:
         rows = self.db.execute("SELECT * FROM runs WHERE status='escalated' ORDER BY id DESC LIMIT 100").fetchall()
         return [dict(row) for row in rows]
